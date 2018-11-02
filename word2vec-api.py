@@ -72,6 +72,26 @@ class MostSimilar(Resource):
             print(res)
 
 
+class SimilarList(Resource):
+    def get(self):
+        if (norm == "disable"):
+            return "similar_list disabled", 400
+        parser = reqparse.RequestParser()
+        parser.add_argument('word', required=True, help="Word cannot be blank!")
+        parser.add_argument('topn', type=int, required=False, help="Number of results.")
+        args = parser.parse_args()
+        #pos = filter_words(args.get('word', []))
+        word = args['word']
+        t = args.get('topn', 10)
+        try:
+            similarities = model.most_similar_cosmul(positive=[word],topn=t)
+            wordlist = [w[0] for w in similarities]
+            return wordlist
+        except Exception as e:
+            print(e)
+            print(wordlist)
+
+
 class Model(Resource):
     def get(self):
         parser = reqparse.RequestParser()
@@ -152,6 +172,7 @@ if __name__ == '__main__':
     api.add_resource(N_Similarity, path+'/n_similarity')
     api.add_resource(Similarity, path+'/similarity')
     api.add_resource(MostSimilar, path+'/most_similar')
+    api.add_resource(SimilarList, path+'/list')
     api.add_resource(Model, path+'/model')
     api.add_resource(ModelWordSet, '/word2vec/model_word_set')
     app.run(host=host, port=port)
